@@ -1,0 +1,51 @@
+<!DOCTYPE html> 
+<html lang="en"> 
+<head> 
+  <meta charset="utf-8" /> 
+  <title>Comet Example</title>
+  <script src="http://ajax.googleapis.com/ajax/libs/prototype/1.6.1.0/prototype.js"></script>
+  <script src="comet.js"></script>
+</head> 
+<body>
+
+<div id="chat" style="height: 400px; overflow-y: scroll"></div>
+
+<form id="outgoing_form">
+  <p>
+    <span id="nick">nick</span>
+    <input type="text" size="70" id="outgoing_text" />
+    <input type="submit" value="Send" />
+  </p>
+</form>
+<div id="log" style="display: none;"></div>
+
+<script>
+
+var queryParams = window.location.toString().toQueryParams();
+var nick = 'random' + Math.floor(Math.random()*1001);
+if (queryParams.nick) {
+  nick = queryParams.nick;
+}
+$('nick').update(nick);
+
+var comet = new Comet('/comet/', nick);
+comet.onMessage = function(message) {
+  console.log('onMessage');
+  console.log(message);
+  if (message == null) return;
+  var nick = message[0];
+  $('chat').insert("<p><b>" + nick + "</b>: " + message[1].message + "</p>");
+}
+comet.start();
+
+$('outgoing_form').observe('submit', function(event) {
+  Event.stop(event); // stop the form from submitting
+  comet.send({message: $('outgoing_text').getValue()});
+  $('log').insert('<p>sending ' + $('outgoing_text').getValue().toJSON() + '</p>');
+  $('outgoing_text').clear();
+});
+
+</script>
+
+</body> 
+</html>
